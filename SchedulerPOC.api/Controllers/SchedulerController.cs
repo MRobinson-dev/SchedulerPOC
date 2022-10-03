@@ -8,46 +8,50 @@ namespace HangfireDemo.Controllers
     public class ProductController : ControllerBase
     {
         [HttpGet]
-        [Route("login")]
-        public String Login()
+        [Route("ImmediateJob")]
+        public String ImmediateJob()
         {
             //Fire - and - Forget Job - this job is executed only once
-            var jobId = BackgroundJob.Enqueue(() => Console.WriteLine("Welcome to Shopping World!"));
+            var now = new TimeOnly();
+            now = TimeOnly.FromDateTime(DateTime.Now.ToUniversalTime());
+            var jobId = BackgroundJob.Enqueue(() => Console.WriteLine("This job is executed immediately"));
 
-            return $"Job ID: {jobId}. Welcome mail sent to the user!";
+            return $"Job ID: {jobId}. This Immediate Job was submitted at {now.ToLongTimeString()} Universal Time";
         }
 
         [HttpGet]
-        [Route("productcheckout")]
-        public String CheckoutProduct()
+        [Route("timedjob")]
+        public String TimedJob(int seconds = 30)
         {
             //Delayed Job - this job executed only once but not immedietly after some time.
-            var jobId = BackgroundJob.Schedule(() => Console.WriteLine("You checkout new product into your checklist!"), TimeSpan.FromSeconds(20));
+            var now = new TimeOnly();
+            now = TimeOnly.FromDateTime(DateTime.Now.ToUniversalTime());
+            var jobId = BackgroundJob.Schedule(() => Console.WriteLine($"You scheduled a job to run in {seconds} seconds!"), TimeSpan.FromSeconds(seconds));
 
-            return $"Job ID: {jobId}. You added one product into your checklist successfully!";
+            return $"Job ID: {jobId}. This Timed Job was submitted at {now.ToLongTimeString()} Universal Time to run in {seconds} seconds";
         }
 
         [HttpGet]
-        [Route("productpayment")]
-        public String ProductPayment()
+        [Route("parentchildjob")]
+        public String ParentChildJob()
         {
             //Fire and Forget Job - this job is executed only once
-            var parentjobId = BackgroundJob.Enqueue(() => Console.WriteLine("You have done your payment suceessfully!"));
+            var parentjobId = BackgroundJob.Enqueue(() => Console.WriteLine("This is the Parent Job"));
 
             //Continuations Job - this job executed when its parent job is executed.
-            BackgroundJob.ContinueJobWith(parentjobId, () => Console.WriteLine("Product receipt sent!"));
+            var jobId = BackgroundJob.ContinueJobWith(parentjobId, () => Console.WriteLine("This is the Child Job"));
 
-            return "You have done payment and receipt sent on your mail id!";
+            return $"The Parent Job {parentjobId} ran then the Child Job {jobId} ran!";
         }
 
         [HttpGet]
-        [Route("dailyoffers")]
-        public String DailyOffers()
+        [Route("dailyjob")]
+        public String DailyJob()
         {
             //Recurring Job - this job is executed many times on the specified cron schedule
-            RecurringJob.AddOrUpdate(() => Console.WriteLine("Sent similar product offer and suuggestions"), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => Console.WriteLine("This job will run daily"), Cron.Daily);
 
-            return "offer sent!";
+            return "daily job scheduled";
         }
     }
 }
