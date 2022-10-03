@@ -8,6 +8,14 @@ namespace HangfireDemo.Controllers
     public class ProductController : ControllerBase
     {
         [HttpGet]
+        [Route("mainjob")]
+        public string MainJob()
+        {
+            RecurringJob.AddOrUpdate(() => ShowtimeLoaderJobs.QueueShowtimeLoaderJobs(), "*/20 * * * *");
+            return "done";
+        }
+
+        [HttpGet]
         [Route("ImmediateJob")]
         public String ImmediateJob()
         {
@@ -44,6 +52,8 @@ namespace HangfireDemo.Controllers
             return $"The Parent Job {parentjobId} ran then the Child Job {jobId} ran!";
         }
 
+
+
         [HttpGet]
         [Route("dailyjob")]
         public String DailyJob()
@@ -53,5 +63,7 @@ namespace HangfireDemo.Controllers
 
             return "daily job scheduled";
         }
+
+
     }
 }
