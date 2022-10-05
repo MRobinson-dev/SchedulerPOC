@@ -16,7 +16,25 @@ namespace HangfireDemo.Controllers
         }
 
         [HttpGet]
-        [Route("ImmediateJob")]
+        [Route("purgealljobs")]
+        public String PurgeAllJobs()
+        {
+            //Fire - and - Forget Job - this job is executed only once
+            ShowtimeLoaderJobs.PurgeJobs();
+
+            return $"Request to purge all jobs initiated";
+        }
+
+        [HttpDelete]
+        [Route("deleterecurringjob")]
+        public string DeleteRecurringJob(string jobId)
+        {
+            RecurringJob.RemoveIfExists(jobId);
+            return "request sent";
+        }
+
+        [HttpGet]
+        [Route("Immediatejob")]
         public String ImmediateJob()
         {
             //Fire - and - Forget Job - this job is executed only once
