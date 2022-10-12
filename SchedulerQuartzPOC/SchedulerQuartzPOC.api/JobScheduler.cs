@@ -1,13 +1,13 @@
-﻿using Quartz;
+﻿//using Quartz;
 
-namespace SchedulerQuartzPOC.api
-{
-    public class JobScheduler :IJob
-    {
-        public Task Execute(IJobExecutionContext context)
-        {
+//namespace SchedulerQuartzPOC.api
+//{
+//    public class JobScheduler :IJob
+//    {
+//        public Task Execute(IJobExecutionContext context)
+//        {
 
-            return Task.FromResult(true);
-        }
-    }
-}
+//            return Task.FromResult(true);
+//        }
+//    }
+//}

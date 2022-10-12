@@ -1,5 +1,5 @@
 using Quartz;
-using SchedulerQuartzPOC.api.Controllers;
+using SchedulerQuartzPOC.api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,17 +11,39 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddQuartz(q =>
 {
-    q.SchedulerName = "Example Quartz Scheduler";
-// Use a Scoped container for creating IJobs
-q.AddJob<DownloadAllTheatersForPosSystemJob>(opts => opts.WithIdentity("jobKey"));
-q.AddTrigger(opts => opts
-    .WithIdentity("...")
-    .ForJob("jobKey")
-    .StartNow()
-    .WithSimpleSchedule(x => x
-        .WithInterval(TimeSpan.FromSeconds(30))
-        .RepeatForever())
-);
+    q.SchedulerName = "Showtime Loaders Scheduler";
+
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    var jobkey = new JobKey("ShowtimeLoadersScheduledJob");
+
+    q.AddJob<ShowtimeLoadersScheduledJob>(opts => opts
+        .WithIdentity(jobkey)
+        .UsingJobData("posId", "all")
+        .UsingJobData("chainId", "all")
+        .UsingJobData("theaterId", "all"));
+    q.AddTrigger(opts => opts
+        .WithIdentity("ShowtimeLoadersScheduledJob-trigger")
+        .ForJob(jobkey)
+        .StartNow()
+        .WithSimpleSchedule(x => x
+            .WithInterval(TimeSpan.FromSeconds(5))
+            .RepeatForever()));
+
+    var posJobKey = new JobKey("ShowtimeLoaderPosJob");
+    q.AddJob<ShowtimeLoaderPosJob>(opts => opts
+        .WithIdentity(posJobKey)
+        .StoreDurably(true));
+
+    var chainJobKey = new JobKey("ShowtimeLoaderChainJob");
+    q.AddJob<ShowtimeLoaderChainJob>(opts => opts
+        .WithIdentity(chainJobKey)
+        .StoreDurably(true));
+
+    var theaterJobKey = new JobKey("ShowtimeLoaderTheaterJob");
+    q.AddJob<ShowtimeLoaderTheaterJob>(opts => opts
+        .WithIdentity(theaterJobKey)
+        .StoreDurably(true));
+
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

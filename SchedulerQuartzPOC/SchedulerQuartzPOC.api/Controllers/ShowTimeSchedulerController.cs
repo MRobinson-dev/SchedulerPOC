@@ -1,5 +1,7 @@
+using System.Security.Cryptography.Xml;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
+using Quartz.Impl;
 
 namespace SchedulerQuartzPOC.api.Controllers
 {
@@ -17,6 +19,8 @@ namespace SchedulerQuartzPOC.api.Controllers
     {
         public async Task Execute(IJobExecutionContext context)
         {
+            var jd = context.JobDetail.JobDataMap.Values;
+
              var posId =  context.JobDetail.JobDataMap["posId"];
             Console.WriteLine(posId);
             
@@ -34,62 +38,71 @@ namespace SchedulerQuartzPOC.api.Controllers
     [Route("api/[controller]/[action]")]
     public class ShowTimeSchedulerController : ControllerBase
     {
-        private readonly IScheduler _scheduler;
+        private readonly ISchedulerFactory _factory;
 
         private readonly ILogger<ShowTimeSchedulerController> _logger;
 
 
-        public ShowTimeSchedulerController(ILogger<ShowTimeSchedulerController> logger, IScheduler scheduler)
+        public ShowTimeSchedulerController(ILogger<ShowTimeSchedulerController> logger, ISchedulerFactory factory)
         {
+            _factory = factory;
             _logger = logger;
-            _scheduler = scheduler;
         }
 
         [HttpPost]
         [ActionName("RunShowtimeJobForPos")]
-        public async Task RunShowtimeJobForPos(int posId)
+        public async Task<OkObjectResult> RunShowtimeJobForPos(int posId)
         {
-            /**
-             * 202
-             */
-            var job = JobBuilder.Create<DownloadAllTheatersForPosSystemJob>()
-                .WithIdentity("pos1")
-                .UsingJobData("posId", posId)
-                .Build();
-            var trigger = TriggerBuilder.Create()
-                .WithIdentity("...")
-                .StartNow()
-                .Build();
-            await _scheduler.ScheduleJob(job, trigger);
+            var jobKeyName = "ShowtimeLoaderPosJob";
+            var jobKey = new JobKey(jobKeyName);
+            IScheduler scheduler = await _factory.GetScheduler();
+            scheduler.Context.Clear();
+            scheduler.Context.Add("posId", posId);
+            await scheduler.TriggerJob(jobKey);
+
+            return Ok("OK");
         }
 
         [HttpPost]
         [ActionName("RunShowtimeJobForChain")]
-        public void RunShowtimeJobForChain(int chainId)
+        public async Task<OkObjectResult> RunShowtimeJobForChain(int chainId)
         {
-            //var theaters = _theater.GetTheatersForChain(chainId);
+            var jobKeyName = "ShowtimeLoaderChainJob";
+            var jobKey = new JobKey(jobKeyName);
+            
+            IScheduler scheduler = await _factory.GetScheduler();
+            scheduler.Context.Clear();
+            scheduler.Context.Add("chainId", chainId);
+            await scheduler.TriggerJob(jobKey);
 
-            //return theaters;
+            return Ok("OK");
 
         }
 
         [HttpPost]
         [ActionName("RunShowtimeJobForTheater")]
-        public void RunShowtimeJobForTheater(int theaterId)
+        public async Task<OkObjectResult> RunShowtimeJobForTheater(int theaterId)
         {
-            //var theaters = _theater.GetTheater(theaterId);
 
-            //return theaters;
+            var jobKeyName = "ShowtimeLoaderTheaterJob";
+            var jobKey = new JobKey(jobKeyName);
 
+            IScheduler scheduler = await _factory.GetScheduler();
+            scheduler.Context.Clear();
+            scheduler.Context.Add("theaterId", theaterId);
+            await scheduler.TriggerJob(jobKey);
+
+            return Ok("OK");
         }
 
         [HttpPost]
         [ActionName("ScheduleShowtimeJobForAllTheaters")]
-        public void ScheduleShowtimeJobForAllTheaters()
+        public async Task<OkObjectResult> ScheduleShowtimeJobForAllTheaters()
         {
-            //var theaters = _theater.ScheduleShowtimeLoaderJob();
+            IScheduler scheduler = await _factory.GetScheduler();
+            await scheduler.TriggerJob(new JobKey("ShowtimeLoadersScheduledJob"));
 
-            //return theaters;
+            return Ok("OK");
 
         }
 
