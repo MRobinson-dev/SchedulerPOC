@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Cryptography.Xml;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
@@ -68,14 +69,21 @@ namespace SchedulerQuartzPOC.api.Controllers
         public async Task<OkObjectResult> RunShowtimeJobForChain(int chainId)
         {
             var jobKeyName = "ShowtimeLoaderChainJob";
-            var jobKey = new JobKey(jobKeyName);
-            
-            IScheduler scheduler = await _factory.GetScheduler();
-            scheduler.Context.Clear();
-            scheduler.Context.Add("chainId", chainId);
-            await scheduler.TriggerJob(jobKey);
+                var jobKey = new JobKey(jobKeyName);
 
-            return Ok("OK");
+
+
+
+                IScheduler scheduler = await _factory.GetScheduler();
+
+                scheduler.Context.Clear();
+                scheduler.Context.Add("chainId", chainId);
+                await scheduler.TriggerJob(jobKey);
+                return Ok("OK");
+   
+
+
+            
 
         }
 
@@ -122,26 +130,17 @@ namespace SchedulerQuartzPOC.api.Controllers
 
         }
 
-        [HttpDelete]
+        [HttpPost]
         [ActionName("StopRunningJob")]
-        public void StopRunningJob(JobKey jobKey)
+        public async Task<OkObjectResult> StopRunningJob(string jobKey)
         {
-            // Start job execution
-            // POST /jobs/:name/executions
-            // { args: "..." }
+            var runningjobKey = new JobKey(jobKey);
 
-            // Stop running job
-            // DELETE /jobs/:name/executions/:executionId
-
-            // Start or stop a scheduled job
-            // PUT /jobs/:name/schedule/status
-            // { "status": "started|stopped" }
-
-            // Stop all jobs
-            // DELETE /jobs/executions
-
-           // _theater.StopRunningJob(jobKey);
-
+            IScheduler scheduler = await _factory.GetScheduler();
+            var x = scheduler.GetCurrentlyExecutingJobs();
+            await scheduler.Interrupt(runningjobKey);
+            var y = scheduler.GetCurrentlyExecutingJobs();
+            return Ok("OK");
         }
 
     }

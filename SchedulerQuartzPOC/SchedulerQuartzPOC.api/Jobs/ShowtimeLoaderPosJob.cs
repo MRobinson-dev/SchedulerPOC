@@ -2,6 +2,7 @@
 
 namespace SchedulerQuartzPOC.api.Jobs
 {
+    [DisallowConcurrentExecution]
     public class ShowtimeLoaderPosJob : IJob
     {
         public Task Execute(IJobExecutionContext context)

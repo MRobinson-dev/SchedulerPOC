@@ -32,16 +32,25 @@ builder.Services.AddQuartz(q =>
     var posJobKey = new JobKey("ShowtimeLoaderPosJob");
     q.AddJob<ShowtimeLoaderPosJob>(opts => opts
         .WithIdentity(posJobKey)
+        .UsingJobData("posId", "all")
+        .UsingJobData("chainId", "all")
+        .UsingJobData("theaterId", "all")
         .StoreDurably(true));
 
     var chainJobKey = new JobKey("ShowtimeLoaderChainJob");
     q.AddJob<ShowtimeLoaderChainJob>(opts => opts
         .WithIdentity(chainJobKey)
+        .UsingJobData("posId", "all")
+        .UsingJobData("chainId", "all")
+        .UsingJobData("theaterId", "all")
         .StoreDurably(true));
 
     var theaterJobKey = new JobKey("ShowtimeLoaderTheaterJob");
     q.AddJob<ShowtimeLoaderTheaterJob>(opts => opts
         .WithIdentity(theaterJobKey)
+        .UsingJobData("posId", "all")
+        .UsingJobData("chainId", "all")
+        .UsingJobData("theaterId", "all")
         .StoreDurably(true));
 
 });
