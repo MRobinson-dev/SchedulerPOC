@@ -1,5 +1,6 @@
 using Quartz;
-using SchedulerQuartzPOC.api.Controllers;
+using System.Configuration;
+using WebApplication2.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,23 +10,28 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddQuartz(q =>
 {
-    q.SchedulerName = "Example Quartz Scheduler";
-// Use a Scoped container for creating IJobs
-q.AddJob<DownloadAllTheatersForPosSystemJob>(opts => opts.WithIdentity("jobKey"));
-q.AddTrigger(opts => opts
-    .WithIdentity("...")
-    .ForJob("jobKey")
-    .StartNow()
-    .WithSimpleSchedule(x => x
-        .WithInterval(TimeSpan.FromSeconds(30))
-        .RepeatForever())
-);
-});
+    q.UseMicrosoftDependencyInjectionJobFactory();
 
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    var jobKey = new JobKey("DemoJob");
+    q.AddJob<DemoJob>(opts => opts
+        .WithIdentity(jobKey)
+        .StoreDurably(true));
+
+    var jobKey2 = new JobKey("ImmediateJob");
+    q.AddJob<ImmediateJob>(opts => opts
+        .WithIdentity(jobKey2)
+        .StoreDurably(true));
+
+
+
+
+});
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
-//builder.Services.AddQuartzHostedService();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

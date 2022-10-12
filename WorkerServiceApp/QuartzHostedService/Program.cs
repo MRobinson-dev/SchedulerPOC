@@ -33,7 +33,7 @@ public class Program
                     q.SchedulerName = "Example Quartz Scheduler";
 
                     // Use a Scoped container for creating IJobs
-                    q.UseMicrosoftDependencyInjectionScopedJobFactory();
+                   q.UseMicrosoftDependencyInjectionJobFactory();
 
                     // add the job
                     var jobKey = new JobKey("Update exchange rates");

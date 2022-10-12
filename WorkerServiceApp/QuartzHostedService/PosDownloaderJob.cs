@@ -55,7 +55,7 @@ namespace QuartzHostedService
             return Task.Run(async () =>
             {
                 _logger.LogInformation($"Downloading POS schedule for theater {theater.PosName}/{theater.Id}.");
-                await Task.Delay(1000);
+                await Task.Delay(5000);
                 _logger.LogInformation($"POS schedule downloaded for theater {theater.PosName}/{theater.Id}.");
             });
         }
